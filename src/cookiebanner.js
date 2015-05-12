@@ -58,6 +58,7 @@
         get: function (key) {
             return decodeURIComponent(doc.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(key).replace(/[\-\.\+\*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
         },
+
         set: function (key, val, end, path, domain, secure) {
             if (!key || /^(?:expires|max\-age|path|domain|secure)$/i.test(key)) {
                 return false;
@@ -222,6 +223,7 @@
                 cookie: 'cookiebanner-accepted',
                 closeText: '&#10006;',
                 cookiePath: '/',
+                domain:'',
                 debug: false,
                 expires: Infinity,
                 zindex: 255,
@@ -229,7 +231,7 @@
                 maskOpacity: 0.5,
                 maskBackground: '#000',
                 height: 'auto',
-                minHeight: '21px',
+                minHeight: '20px',
                 bg: '#000',
                 fg: '#ddd',
                 link: '#aaa',
@@ -241,7 +243,8 @@
                 fontSize: '14px',
                 fontFamily: 'arial, sans-serif',
                 instance: global_instance_name,
-                textAlign: 'center'
+                textAlign: 'center',
+                opacity: 1
             };
 
             this.options = this.default_options;
@@ -321,7 +324,7 @@
         },
 
         agree: function() {
-            this.cookiejar.set(this.options.cookie, 1, this.options.expires, this.options.cookiePath);
+            this.cookiejar.set(this.options.cookie, 1, this.options.expires, this.options.cookiePath, this.options.domain);
             return true;
         },
 
@@ -388,11 +391,12 @@
             el.style.color = this.options.fg;
             el.style.lineHeight = el.style.minHeight;
 
-            el.style.padding = '5px 16px';
+            el.style.padding = this.options.padding;
 
             el.style.fontFamily = this.options.fontFamily;
             el.style.fontSize = this.options.fontSize;
             el.style.textAlign = this.options.textAlign;
+            el.style.opacity = this.options.opacity;
 
             if ('top' === this.options.position) {
                 el.style.top = 0;
@@ -400,16 +404,16 @@
                 el.style.bottom = 0;
             }
 
-            el.innerHTML = '<div class="cookiebanner-close" style="float:right;padding-left:5px;">' +
+            el.innerHTML = '<div class="cookiebanner-close">' +
                 this.options.closeText + '</div>' +
-                '<span>' + this.options.message + ' <a>' + this.options.linkmsg + '</a></span>';
+                '<span>' + this.options.message + '</a></span>';
 
             this.element = el;
 
             var el_a = el.getElementsByTagName('a')[0];
             el_a.href = this.options.moreinfo;
             el_a.target = '_blank';
-            el_a.style.textDecoration = 'none';
+            el_a.style.textDecoration = 'underline';
             el_a.style.color = this.options.link;
 
             var el_x = el.getElementsByTagName('div')[0];
@@ -426,6 +430,10 @@
                 self.agree_and_close();
             });
 
+            on(el_a, 'click', function(){
+                self.agree_and_close();
+            });
+
             if (this.element_mask) {
                 on(this.element_mask, 'click', function(){
                     self.agree_and_close();
@@ -433,15 +441,9 @@
                 doc.body.appendChild(this.element_mask);
             }
 
-            doc.body.appendChild(this.element);
-            this.inserted = true;
 
-            if ('fade' === this.options.effect) {
-                this.element.style.opacity = 0;
-                Utils.fade_in(this.element);
-            } else {
-                this.element.style.opacity = 1;
-            }
+            doc.body.insertBefore(this.element, doc.body.firstChild);
+            this.inserted = true;
         }
 
     };
