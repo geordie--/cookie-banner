@@ -77,7 +77,13 @@
                     break;
                 }
             }
-            doc.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(val) + expires + (domain ? '; domain=' + domain : '') + (path ? '; path=' + path : '') + (secure ? '; secure' : '');
+
+            var cookieString = encodeURIComponent(key) + '=' + encodeURIComponent(val) + expires + (path ? '; path=' + path : '') + (secure ? '; secure' : '');
+            if (domain && doc.domain != 'localhost'){
+                cookieString += '; domain=' + domain;
+            }
+            doc.cookie = cookieString;
+
             return true;
         },
         has: function (key) {
